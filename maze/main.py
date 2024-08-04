@@ -1,15 +1,16 @@
 import random
 
 from enum import Enum
+from collections import deque
 from typing import List, NamedTuple
 
 
 class Cell(str, Enum):
-    EMPTY = ""
+    EMPTY = " "
     BLOCKED = "X"
     START = "S"
     GOAL = "G"
-    PATH = "*"
+    PATH = "#"
 
 
 class MazeLocation(NamedTuple):
@@ -22,19 +23,17 @@ class Maze:
         self,
         rows=10,
         columns=10,
-        start=MazeLocation(0, 0),
-        goal=MazeLocation(9, 9),
-        sparseness=0.2,
+        sparseness=0.15,
     ):
         self._rows = rows
         self._columns = columns
-        self.start: MazeLocation = start
-        self.goal: MazeLocation = goal
+        self.start = MazeLocation(0, 0)
+        self.goal = MazeLocation(rows-1, columns-1)
 
-        self._grid: List[List[Cell]] = [[Cell.PATH for _ in range(columns)] for _ in range(rows)]
+        self._grid: List[List[Cell]] = [[Cell.EMPTY for _ in range(columns)] for _ in range(rows)]
         self._randomly_fill(rows, columns, sparseness)
-        self._grid[start.row][start.column] = Cell.START
-        self._grid[goal.row][goal.column] = Cell.GOAL
+        self._grid[self.start.row][self.start.column] = Cell.START
+        self._grid[self.goal.row][self.goal.column] = Cell.GOAL
 
     def _randomly_fill(self, rows: int, columns: int, sparseness: float):
         """Randomly fill blocks in maze, amount based on sparseness (0 - 1)"""
@@ -43,10 +42,6 @@ class Maze:
                 if random.uniform(0, 1.0) < sparseness:
                     self._grid[row][column] = Cell.BLOCKED
 
-    def goal_test(self, ml: MazeLocation):
-        """Check if current location is at the goal"""
-        return ml == self.goal
-    
     def find_next_possible_locations(self, ml: MazeLocation) -> List[MazeLocation]:
         """Return wich locations are available out of the top, right, bottom, left locations."""
         if self._grid[ml.row][ml.column] == Cell.BLOCKED:
@@ -55,17 +50,48 @@ class Maze:
         locations: List[MazeLocation] = []
         if ml.row + 1 < self._rows and self._grid[ml.row + 1][ml.column] != Cell.BLOCKED:
             locations.append(MazeLocation(ml.row + 1, ml.column))
-
         if ml.row - 1 >= 0 and self._grid[ml.row - 1][ml.column] != Cell.BLOCKED:
             locations.append(MazeLocation(ml.row - 1, ml.column))
-
         if ml.column + 1 < self._columns and self._grid[ml.row][ml.column + 1] != Cell.BLOCKED:
             locations.append(MazeLocation(ml.row, ml.column + 1))
-
         if ml.column - 1 >= 0 and self._grid[ml.row][ml.column - 1] != Cell.BLOCKED:
             locations.append(MazeLocation(ml.row, ml.column - 1))
             
         return locations
+
+    def goal_test(self, ml: MazeLocation):
+        """ Check if current location is at the goal"""
+        return ml == self.goal
+    
+    def draw_path(self, locations: List[MazeLocation]):
+        """Draws the locations in the maze grid as #"""
+        for location in locations:
+            self._grid[location.row][location.column] = Cell.PATH
+            self._grid[self.start.row][self.start.column] = Cell.START
+            self._grid[self.goal.row][self.goal.column] = Cell.GOAL
+
+        print(self)
+
+    def solve(self) -> None:
+        """Tries to find a solution using BFS, prints out the path if it exists else a message"""
+        queue = deque([[self.start]])
+        visited = set([self.start])
+
+        while queue:
+            path = queue.popleft()
+            current_location = path[-1]
+
+            if self.goal_test(current_location):
+                self.draw_path(path)
+
+            for next_location in self.find_next_possible_locations(current_location):
+                if next_location not in visited:
+                    visited.add(next_location)
+                    new_path = list(path)
+                    new_path.append(next_location)
+                    queue.append(new_path)
+
+        print("No solution")
 
     def __str__(self) -> str:
         output = ""
@@ -74,18 +100,9 @@ class Maze:
         return output
 
 
-def find_solution(maze: Maze):
-    """
-    Use DFS to find solution, go through each path as far as 
-    possible before backtrack.
-    """
-    print(maze.find_next_possible_locations(MazeLocation(2,3)))
-
-
 def main():
-    maze = Maze()
-    find_solution(maze)
-
+    maze = Maze(rows=5, columns=30)
+    maze.solve()
 
 if __name__ == "__main__":
     main()
