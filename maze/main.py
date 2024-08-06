@@ -56,7 +56,7 @@ class Maze:
             locations.append(MazeLocation(ml.row, ml.column + 1))
         if ml.column - 1 >= 0 and self._grid[ml.row][ml.column - 1] != Cell.BLOCKED:
             locations.append(MazeLocation(ml.row, ml.column - 1))
-            
+        
         return locations
 
     def goal_test(self, ml: MazeLocation):
@@ -70,11 +70,10 @@ class Maze:
             self._grid[self.start.row][self.start.column] = Cell.START
             self._grid[self.goal.row][self.goal.column] = Cell.GOAL
 
-        print(self)
-
     def solve(self) -> None:
         """Tries to find a solution using BFS, prints out the path if it exists else a message"""
-        queue = deque([[self.start]])
+        # BFS always finds the shortest path since we check for possible paths in every step.
+        queue = deque([[self.start]]) #Holds lists of paths
         visited = set([self.start])
 
         while queue:
@@ -83,9 +82,12 @@ class Maze:
 
             if self.goal_test(current_location):
                 self.draw_path(path)
-
+                return print(self)
+                
             for next_location in self.find_next_possible_locations(current_location):
                 if next_location not in visited:
+                    # We create a new path for the queue extending the current one and
+                    # then append to queue to explore further
                     visited.add(next_location)
                     new_path = list(path)
                     new_path.append(next_location)
