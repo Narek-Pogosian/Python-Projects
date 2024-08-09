@@ -31,9 +31,7 @@ class Maze {
   }
 
   private createGrid() {
-    return Array.from({ length: this.rows }, () =>
-      Array(this.columns).fill(Cell.EMPTY)
-    );
+    return Array.from({ length: this.rows }, () => Array(this.columns).fill(Cell.EMPTY));
   }
 
   private randomlyFillGrid(rows: number, columns: number, sparseness: number) {
@@ -46,16 +44,13 @@ class Maze {
     }
   }
 
-  findNextPossibleLocations(ml: MazeLocation): MazeLocation[] | undefined {
+  private findNextPossibleLocations(ml: MazeLocation) {
     if (this.grid[ml.row][ml.column] === Cell.BLOCKED) {
       return;
     }
 
     const locations: MazeLocation[] = [];
-    if (
-      ml.row + 1 < this.rows &&
-      this.grid[ml.row + 1][ml.column] !== Cell.BLOCKED
-    ) {
+    if (ml.row + 1 < this.rows && this.grid[ml.row + 1][ml.column] !== Cell.BLOCKED) {
       locations.push({ row: ml.row + 1, column: ml.column });
     }
 
@@ -63,24 +58,18 @@ class Maze {
       locations.push({ row: ml.row - 1, column: ml.column });
     }
 
-    if (
-      ml.column + 1 < this.columns &&
-      this.grid[ml.row][ml.column + 1] !== Cell.BLOCKED
-    ) {
+    if (ml.column + 1 < this.columns && this.grid[ml.row][ml.column + 1] !== Cell.BLOCKED) {
       locations.push({ row: ml.row, column: ml.column + 1 });
     }
 
-    if (
-      ml.column - 1 >= 0 &&
-      this.grid[ml.row][ml.column - 1] !== Cell.BLOCKED
-    ) {
+    if (ml.column - 1 >= 0 && this.grid[ml.row][ml.column - 1] !== Cell.BLOCKED) {
       locations.push({ row: ml.row, column: ml.column - 1 });
     }
 
     return locations;
   }
 
-  goalTest(ml: MazeLocation): boolean {
+  private goalTest(ml: MazeLocation): boolean {
     return ml.row === this.goal.row && ml.column === this.goal.column;
   }
 
@@ -93,10 +82,9 @@ class Maze {
   }
 
   solve() {
-    const queue: MazeLocation[][] = [[this.start]];
-    const visited: Set<string> = new Set([
-      `${this.start.row},${this.start.column}`,
-    ]);
+    // BFS always finds the shortest path since we check for possible paths in every step.
+    const queue: MazeLocation[][] = [[this.start]]; // Holds lists of paths
+    const visited: Set<string> = new Set([`${this.start.row},${this.start.column}`]);
 
     while (queue.length > 0) {
       const path = queue.shift()!;
@@ -113,6 +101,8 @@ class Maze {
         for (const nextLocation of nextLocations) {
           const locationKey = `${nextLocation.row},${nextLocation.column}`;
           if (!visited.has(locationKey)) {
+            // We create a new path for the queue extending the current one and
+            // then append to queue to explore further
             visited.add(locationKey);
             queue.push([...path, nextLocation]);
           }

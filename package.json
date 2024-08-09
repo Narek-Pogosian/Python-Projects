@@ -2,7 +2,7 @@
   "name": "node-projects",
   "version": "1.0.0",
   "description": "This is a collection of smaller node projects.",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,5 +13,8 @@
     "@types/node": "^22.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^5.3.8"
   }
 }
